@@ -7,6 +7,10 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "postgresql+asyncpg://postgres:password@localhost:5432/smart_campus"
     DB_ECHO: bool = False  # True em dev para ver SQL
 
+    # APIs externas
+    OPEN_METEO_URL: str = "https://api.open-meteo.com/v1/forecast"
+    GEO_API_URL: str = "https://geoapi.pt"
+
     # Localização do campus (IPT — Tomar)
     CAMPUS_LATITUDE: float = 39.6036
     CAMPUS_LONGITUDE: float = -8.4133
