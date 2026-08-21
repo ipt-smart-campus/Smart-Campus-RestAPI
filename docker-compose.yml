@@ -1,0 +1,36 @@
+services:
+  db:
+    image: postgres:16
+    container_name: smart-campus-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: smart_campus
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - smart_campus_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: .
+    container_name: smart-campus-restapi
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      # Sobrepõe o DATABASE_URL do .env: dentro da rede Docker o host da BD
+      # é o nome do serviço ("db"), não "localhost"
+      DATABASE_URL: postgresql+asyncpg://postgres:password@db:5432/smart_campus
+    ports:
+      - "8000:8000"
+
+volumes:
+  smart_campus_data:
