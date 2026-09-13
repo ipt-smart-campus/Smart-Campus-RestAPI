@@ -26,11 +26,35 @@ services:
     env_file:
       - .env
     environment:
-      # Sobrepõe o DATABASE_URL do .env: dentro da rede Docker o host da BD
-      # é o nome do serviço ("db"), não "localhost"
       DATABASE_URL: postgresql+asyncpg://postgres:password@db:5432/smart_campus
     ports:
       - "8000:8000"
 
+  simulator:
+    build: .
+    container_name: smart-campus-simulator
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_started
+    command: ["python", "simulator.py", "--url", "http://api:8000", "--interval", "10"]
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: smart-campus-grafana
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      db:
+        condition: service_healthy
+
 volumes:
   smart_campus_data:
+  grafana_data:
